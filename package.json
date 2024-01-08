@@ -16,7 +16,7 @@
     "check",
     "node"
   ],
-  "author": "Your Name <youremail@example.com>",
+  "author": "Juan Zitelli <juan.zitelli@finalis.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/juanzitelli/env-vars-check/issues"
