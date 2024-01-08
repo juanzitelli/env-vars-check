@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const recursiveReadDir = require("recursive-readdir");
 
-const dir = process.argv[2]; // replace this with your directory path when calling the script
+const dir = process.argv[2];
 
 recursiveReadDir(dir, [".env"], (err, files) => {
   if (err) throw err;
