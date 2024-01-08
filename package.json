@@ -1,13 +1,27 @@
 {
   "name": "env-vars-check",
   "version": "1.0.0",
-  "description": "",
+  "description": "A tool for checking environment (.env) files against their examples (.env.example)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanzitelli/env-vars-check.git"
+  },
+  "keywords": [
+    "dotenv",
+    "env",
+    "check",
+    "node"
+  ],
+  "author": "Your Name <youremail@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juanzitelli/env-vars-check/issues"
+  },
+  "homepage": "https://github.com/juanzitelli/env-vars-check#readme",
   "dependencies": {
     "dotenv": "^16.3.1",
     "recursive-readdir": "^2.2.3"
