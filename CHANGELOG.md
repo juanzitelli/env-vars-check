@@ -1,5 +1,11 @@
 # env-vars-check
 
+## 5.0.1
+
+### Patch Changes
+
+- 584c8cc: add public config
+
 ## 5.0.0
 
 ### Major Changes
