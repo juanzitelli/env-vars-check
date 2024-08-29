@@ -7,18 +7,50 @@ const dir = process.argv[2];
 const fixMissingVariables = process.argv.includes("--fix");
 const skipNodeModules = process.argv.includes("--skipNodeModules");
 
-const ignoreFunc = (file, stats) => {
-  // Siempre ignorar archivos .env
+const ignoreFunc = (file, _stats) => {
   if (path.basename(file) === ".env") return true;
-
-  // Ignorar node_modules si la bandera está activada
   if (skipNodeModules && file.includes("node_modules")) return true;
-
   return false;
+};
+
+const envVarRegex = /process\.env\.(\w+)|process\.env\[['"](\w+)['"]\]/g;
+
+const findEnvVarsInCode = (filePath) => {
+  const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
+  const envVars = new Map();
+
+  lines.forEach((line, index) => {
+    let match;
+    while ((match = envVarRegex.exec(line)) !== null) {
+      const envVar = match[1] || match[2];
+      if (!envVars.has(envVar)) {
+        envVars.set(envVar, {
+          name: envVar,
+          line: index + 1,
+          filePath: filePath,
+        });
+      }
+    }
+  });
+
+  return Array.from(envVars.values());
 };
 
 recursiveReadDir(dir, [ignoreFunc], (err, files) => {
   if (err) throw err;
+
+  const allEnvVars = new Map();
+  const tsFiles = files.filter((file) => path.extname(file) === ".ts");
+
+  tsFiles.forEach((file) => {
+    const envVarsInFile = findEnvVarsInCode(file);
+    envVarsInFile.forEach((envVar) => {
+      if (!allEnvVars.has(envVar.name)) {
+        allEnvVars.set(envVar.name, envVar);
+      }
+    });
+  });
 
   files.forEach((examplePath) => {
     if (path.basename(examplePath) !== ".env.example") return;
@@ -35,9 +67,17 @@ recursiveReadDir(dir, [ignoreFunc], (err, files) => {
         createEnvFromExample(examplePath, envPath);
       }
     } else {
-      checkEnvVars(examplePath, envPath);
+      checkEnvVars(examplePath, envPath, allEnvVars);
       console.log(`Checked .env file: ${envPath}`);
     }
+  });
+
+  // Log variables de entorno encontradas en el código pero no en .env.example
+  allEnvVars.forEach((envVar) => {
+    console.log(
+      `⚠️ Environment variable "${envVar.name}" is used in the code but not defined in .env.example`
+    );
+    console.log(`   File: ${envVar.filePath}:${envVar.line}`);
   });
 });
 
@@ -50,7 +90,7 @@ const createEnvFromExample = (examplePath, envPath) => {
   }
 };
 
-const checkEnvVars = (examplePath, envPath) => {
+const checkEnvVars = (examplePath, envPath, allEnvVars) => {
   const exampleVars = dotenv.parse(fs.readFileSync(examplePath));
   const envVars = dotenv.parse(fs.readFileSync(envPath));
 
@@ -67,6 +107,8 @@ const checkEnvVars = (examplePath, envPath) => {
         missingVars += `\n${key}=${exampleVars[key]}`;
       }
     }
+    // Remove from allEnvVars if it's in .env.example
+    allEnvVars.delete(key);
   });
 
   if (fixMissingVariables && missingVars) {
