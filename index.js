@@ -5,8 +5,19 @@ const recursiveReadDir = require("recursive-readdir");
 
 const dir = process.argv[2];
 const fixMissingVariables = process.argv.includes("--fix");
+const skipNodeModules = process.argv.includes("--skipNodeModules");
 
-recursiveReadDir(dir, [".env"], (err, files) => {
+const ignoreFunc = (file, stats) => {
+  // Siempre ignorar archivos .env
+  if (path.basename(file) === ".env") return true;
+
+  // Ignorar node_modules si la bandera está activada
+  if (skipNodeModules && file.includes("node_modules")) return true;
+
+  return false;
+};
+
+recursiveReadDir(dir, [ignoreFunc], (err, files) => {
   if (err) throw err;
 
   files.forEach((examplePath) => {
@@ -20,6 +31,9 @@ recursiveReadDir(dir, [".env"], (err, files) => {
           examplePath
         )}`
       );
+      if (fixMissingVariables) {
+        createEnvFromExample(examplePath, envPath);
+      }
     } else {
       checkEnvVars(examplePath, envPath);
       console.log(`Checked .env file: ${envPath}`);
@@ -27,7 +41,16 @@ recursiveReadDir(dir, [".env"], (err, files) => {
   });
 });
 
-function checkEnvVars(examplePath, envPath) {
+const createEnvFromExample = (examplePath, envPath) => {
+  try {
+    fs.copyFileSync(examplePath, envPath);
+    console.log(`Created .env file from .env.example: ${envPath}`);
+  } catch (error) {
+    console.error(`Error creating .env file: ${error.message}`);
+  }
+};
+
+const checkEnvVars = (examplePath, envPath) => {
   const exampleVars = dotenv.parse(fs.readFileSync(examplePath));
   const envVars = dotenv.parse(fs.readFileSync(envPath));
 
@@ -51,9 +74,9 @@ function checkEnvVars(examplePath, envPath) {
     fs.writeFileSync(envPath, envContent);
     console.log(`Missing variables added to .env file: ${envPath}`);
   }
-}
+};
 
-function findLineNumber(file, varName) {
+const findLineNumber = (file, varName) => {
   const content = fs.readFileSync(file, "utf8").split("\n");
   let line = 1;
 
@@ -63,4 +86,4 @@ function findLineNumber(file, varName) {
   }
 
   return line;
-}
+};
