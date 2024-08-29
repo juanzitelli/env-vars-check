@@ -9,14 +9,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          version: 7
-      - uses: actions/setup-node@v3
+          version: 9.9.0  # Specify the exact version you're using locally
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: "pnpm"
-          
-      - run: pnpm store prune
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint && pnpm run build
+          cache: 'pnpm'
+
+      - name: Set PNPM_HOME
+        run: |
+          echo "PNPM_HOME=$HOME/.local/share/pnpm" >> $GITHUB_ENV
+          echo "$HOME/.local/share/pnpm" >> $GITHUB_PATH
+
+      - name: Check pnpm version
+        run: pnpm --version
+
+      - name: Create pnpm store directory
+        run: mkdir -p $HOME/.local/share/pnpm/store/v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and Build
+        run: pnpm run lint && pnpm run build
