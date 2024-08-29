@@ -1,5 +1,11 @@
 # env-vars-check
 
+## 5.0.0
+
+### Major Changes
+
+- a83fc7a: add release command
+
 ## 4.0.0
 
 ### Major Changes
