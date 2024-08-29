@@ -1,11 +1,15 @@
 {
   "name": "env-vars-check",
-  "version": "2.0.0",
+  "version": "3.0.1",
   "description": "A tool for checking environment (.env) files against their examples (.env.example)",
   "author": "Juan Zitelli <juan.zitelli@finalis.com>",
-  "main": "index.js",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "node index.js"
+    "build": "tsup index.ts --format cjs,esm --dts",
+    "lint": "tsc"
   },
   "repository": {
     "type": "git",
@@ -17,13 +21,19 @@
     "check",
     "node"
   ],
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/juanzitelli/env-vars-check/issues"
   },
   "homepage": "https://github.com/juanzitelli/env-vars-check#readme",
   "dependencies": {
+    "@types/recursive-readdir": "^2.2.4",
     "dotenv": "^16.3.1",
     "recursive-readdir": "^2.2.3"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.7",
+    "@types/node": "^22.5.1",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
   }
 }
