@@ -82,9 +82,9 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
     }
   });
 
-  // Log variables de entorno encontradas en el código pero no en .env.example
+  // Log env vars found in the code but not in .env.example
   Object.values(allEnvVars).forEach((envVar: EnvVar) => {
-    console.log(`⚠️ Environment variable "${envVar.name}" is used in the code but not defined in .env.example`);
+    console.log(`⚠️ "${envVar.name}" is used in the code but missing in .env.example`);
     console.log(`   File: ${envVar.filePath}:${envVar.line}`);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "env-vars-check",
-  "version": "3.0.1",
+  "version": "3.0.0",
   "description": "A tool for checking environment (.env) files against their examples (.env.example)",
   "author": "Juan Zitelli <juan.zitelli@finalis.com>",
   "license": "MIT",
