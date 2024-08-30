@@ -5,6 +5,7 @@
   "author": "Juan Zitelli <juan.zitelli@finalis.com>",
   "license": "MIT",
   "main": "dist/index.js",
+  "bin": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
