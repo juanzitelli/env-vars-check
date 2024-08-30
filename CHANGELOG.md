@@ -1,5 +1,11 @@
 # env-vars-check
 
+## 5.1.0
+
+### Minor Changes
+
+- 0972d25: add executable for npx
+
 ## 5.0.1
 
 ### Patch Changes
