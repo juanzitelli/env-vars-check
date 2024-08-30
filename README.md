@@ -26,7 +26,7 @@ npx env-vars-check <directory> [--fix] [--skipNodeModules]
 Alternatively, you can clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/juanzitelli/env-vars-check.git
+git clone https://github.com/juanzitellifns/env-vars-check.git
 cd env-vars-check
 pnpm install
 ```
