@@ -87,7 +87,7 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
     }
   });
 
-  // Log env vars found in the code but not in .env.example
+  
   Object.values(allEnvVars).forEach((envVar: EnvVar) => {
     console.log(
       `⚠️ "${envVar.name}" is used in the code but missing in .env.example`
@@ -98,7 +98,20 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
 
 const createEnvFromExample = (examplePath: string, envPath: string): void => {
   try {
-    fs.copyFileSync(examplePath, envPath);
+    const exampleContent: string = fs.readFileSync(examplePath, "utf8");
+    const lines: string[] = exampleContent.split("\n");
+
+    const envVariables: string[] = lines
+      .filter((line) => line.trim() && !line.startsWith("#")) 
+      .map((line) => {
+        const [key, ...valueParts] = line.split("=");
+        const value = valueParts.join("=").trim(); 
+        return `${key?.trim()}=${value}`; 
+      })
+      .sort(); 
+
+    
+    fs.writeFileSync(envPath, envVariables.join("\n"));
     console.log(`Created .env file from .env.example: ${envPath}`);
   } catch (error) {
     console.error(`Error creating .env file: ${(error as Error).message}`);
@@ -130,7 +143,7 @@ const checkEnvVars = (
         missingVars += `\n${key}=${exampleVars[key]}`;
       }
     }
-    // Remove from allEnvVars if it's in .env.example
+    
     delete allEnvVars[key];
   });
 
@@ -138,8 +151,6 @@ const checkEnvVars = (
     envContent += missingVars;
     fs.writeFileSync(envPath, envContent);
     console.log(`Missing variables added to .env file: ${envPath}`);
-
-    // Imprimir el contenido del archivo .env después de arreglarlo
     console.log(`\nUpdated .env file content:\n${envContent}`);
   }
 };
