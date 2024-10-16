@@ -17,6 +17,7 @@ interface EnvVarMap {
 
 const dir: string = process.argv[2] ?? "";
 const fixMissingVariables: boolean = process.argv.includes("--fix");
+const fixMissing: boolean = process.argv.includes("--fix-missing");
 const skipNodeModules: boolean = process.argv.includes("--skipNodeModules");
 
 const ignoreFunc = (file: string, stats: fs.Stats): boolean => {
@@ -25,8 +26,7 @@ const ignoreFunc = (file: string, stats: fs.Stats): boolean => {
   return false;
 };
 
-const envVarRegex: RegExp =
-  /process\.env\.(\w+)|process\.env\[['"](\w+)['"]\]/g;
+const envVarRegex: RegExp = /process\.env\.(\w+)|process\.env\[['"](\w+)['"]\]/g;
 
 const findEnvVarsInCode = (filePath: string): EnvVar[] => {
   const content: string = fs.readFileSync(filePath, "utf8");
@@ -88,19 +88,22 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
   });
 
   
-  Object.values(allEnvVars).forEach((envVar: EnvVar) => {
+  const missingEnvVars: string[] = Object.values(allEnvVars).map(
+    (envVar) => envVar.name
+  );
+  if (missingEnvVars.length > 0) {
     console.log(
-      `⚠️ "${envVar.name}" is used in the code but missing in .env.example`
+      `The following variables are used in the code but aren't present on .env.example:`
     );
-    console.log(`   File: ${envVar.filePath}:${envVar.line}`);
-  });
+    console.log(missingEnvVars.join(", "));
+  }
 });
 
 const createEnvFromExample = (examplePath: string, envPath: string): void => {
   try {
     const exampleContent: string = fs.readFileSync(examplePath, "utf8");
     const lines: string[] = exampleContent.split("\n");
-
+    
     const envVariables: string[] = lines
       .filter((line) => line.trim() && !line.startsWith("#")) 
       .map((line) => {
@@ -109,7 +112,6 @@ const createEnvFromExample = (examplePath: string, envPath: string): void => {
         return `${key?.trim()}=${value}`; 
       })
       .sort(); 
-
     
     fs.writeFileSync(envPath, envVariables.join("\n"));
     console.log(`Created .env file from .env.example: ${envPath}`);
@@ -151,7 +153,24 @@ const checkEnvVars = (
     envContent += missingVars;
     fs.writeFileSync(envPath, envContent);
     console.log(`Missing variables added to .env file: ${envPath}`);
+    
     console.log(`\nUpdated .env file content:\n${envContent}`);
+  }
+
+  
+  if (fixMissing) {
+    const exampleContent: string = fs.readFileSync(examplePath, "utf8");
+    const exampleLines: string[] = exampleContent.split("\n");
+    const newVars: string[] = Object.keys(allEnvVars)
+      .map((varName) => `${varName}=`)
+      .filter((varLine) => !exampleLines.includes(varLine));
+
+    if (newVars.length > 0) {
+      fs.appendFileSync(examplePath, "\n" + newVars.join("\n"));
+      console.log(
+        `Missing variables added to .env.example: ${newVars.join(", ")}`
+      );
+    }
   }
 };
 
