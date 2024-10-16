@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
-import recursiveReadDir from 'recursive-readdir';
+import * as dotenv from "dotenv";
+import * as fs from "fs";
+import * as path from "path";
+import recursiveReadDir from "recursive-readdir";
 
 interface EnvVar {
   name: string;
@@ -25,11 +25,12 @@ const ignoreFunc = (file: string, stats: fs.Stats): boolean => {
   return false;
 };
 
-const envVarRegex: RegExp = /process\.env\.(\w+)|process\.env\[['"](\w+)['"]\]/g;
+const envVarRegex: RegExp =
+  /process\.env\.(\w+)|process\.env\[['"](\w+)['"]\]/g;
 
 const findEnvVarsInCode = (filePath: string): EnvVar[] => {
-  const content: string = fs.readFileSync(filePath, 'utf8');
-  const lines: string[] = content.split('\n');
+  const content: string = fs.readFileSync(filePath, "utf8");
+  const lines: string[] = content.split("\n");
   const envVars: Map<string, EnvVar> = new Map();
 
   lines.forEach((line: string, index: number) => {
@@ -40,7 +41,7 @@ const findEnvVarsInCode = (filePath: string): EnvVar[] => {
         envVars.set(envVar, {
           name: envVar,
           line: index + 1,
-          filePath: filePath
+          filePath: filePath,
         });
       }
     }
@@ -53,7 +54,9 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
   if (err) throw err;
 
   const allEnvVars: EnvVarMap = {};
-  const tsFiles: string[] = files.filter(file => path.extname(file) === '.ts');
+  const tsFiles: string[] = files.filter(
+    (file) => path.extname(file) === ".ts"
+  );
 
   tsFiles.forEach((file: string) => {
     const envVarsInFile: EnvVar[] = findEnvVarsInCode(file);
@@ -86,7 +89,9 @@ recursiveReadDir(dir, [ignoreFunc], (err: Error | null, files: string[]) => {
 
   // Log env vars found in the code but not in .env.example
   Object.values(allEnvVars).forEach((envVar: EnvVar) => {
-    console.log(`⚠️ "${envVar.name}" is used in the code but missing in .env.example`);
+    console.log(
+      `⚠️ "${envVar.name}" is used in the code but missing in .env.example`
+    );
     console.log(`   File: ${envVar.filePath}:${envVar.line}`);
   });
 });
@@ -98,11 +103,19 @@ const createEnvFromExample = (examplePath: string, envPath: string): void => {
   } catch (error) {
     console.error(`Error creating .env file: ${(error as Error).message}`);
   }
-}
+};
 
-const checkEnvVars = (examplePath: string, envPath: string, allEnvVars: EnvVarMap): void => {
-  const exampleVars: dotenv.DotenvParseOutput = dotenv.parse(fs.readFileSync(examplePath));
-  const envVars: dotenv.DotenvParseOutput = dotenv.parse(fs.readFileSync(envPath));
+const checkEnvVars = (
+  examplePath: string,
+  envPath: string,
+  allEnvVars: EnvVarMap
+): void => {
+  const exampleVars: dotenv.DotenvParseOutput = dotenv.parse(
+    fs.readFileSync(examplePath)
+  );
+  const envVars: dotenv.DotenvParseOutput = dotenv.parse(
+    fs.readFileSync(envPath)
+  );
 
   let envContent: string = fs.readFileSync(envPath, "utf8");
   let missingVars: string = "";
@@ -125,8 +138,11 @@ const checkEnvVars = (examplePath: string, envPath: string, allEnvVars: EnvVarMa
     envContent += missingVars;
     fs.writeFileSync(envPath, envContent);
     console.log(`Missing variables added to .env file: ${envPath}`);
+
+    // Imprimir el contenido del archivo .env después de arreglarlo
+    console.log(`\nUpdated .env file content:\n${envContent}`);
   }
-}
+};
 
 const findLineNumber = (file: string, varName: string): number => {
   const content: string[] = fs.readFileSync(file, "utf8").split("\n");
@@ -138,4 +154,4 @@ const findLineNumber = (file: string, varName: string): number => {
   }
 
   return line;
-}
+};
